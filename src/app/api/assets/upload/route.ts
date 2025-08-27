@@ -14,8 +14,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const isValidType = ['application/json', 'text/csv'].includes(file.type) || 
+                       file.name.match(/\.(json|csv)$/i);
+    
+    if (!isValidType) {
+      return NextResponse.json(
+        { error: 'Unsupported file type. Please upload JSON or CSV' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { message: 'File received', companyId, fileName: file.name },
+      { 
+        message: 'File validation passed', 
+        companyId, 
+        fileName: file.name,
+        fileType: file.type
+      },
       { status: 200 }
     );
 
