@@ -4,7 +4,7 @@ import { assetStorage } from '@/utils/storage';
 import { Asset } from '@/types/asset';
 
 // Helper to create mock FormData
-function createMockFormData(entries: Record<string, any>) {
+function createMockFormData(entries: Record<string, unknown>) {
   return {
     get: (key: string) => entries[key],
   } as unknown as FormData;
