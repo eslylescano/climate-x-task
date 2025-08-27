@@ -3,19 +3,21 @@
 import { useState, useEffect } from "react";
 import { Asset } from "@/types/asset";
 import AssetTable from "@/components/AssetTable";
+import AssetUploadForm from "@/components/AssetUploadForm";
 
 export default function Home() {
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [companyAssets, setCompanyAssets] = useState<Record<string, Asset[]>>(
+    {}
+  );
   const [loading, setLoading] = useState(true);
 
   const fetchAssets = async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/assets");
-
       if (response.ok) {
         const data = await response.json();
-        setAssets(data);
+        setCompanyAssets(data);
       }
     } catch (error) {
       console.error("Failed to fetch assets:", error);
@@ -36,15 +38,32 @@ export default function Home() {
           <p className="text-gray-600">View asset data</p>
         </header>
 
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Assets</h2>
-            <p className="text-sm text-gray-600">
-              {assets.length} asset{assets.length !== 1 ? "s" : ""} found
-            </p>
-          </div>
+        <AssetUploadForm onUploadSuccess={fetchAssets} />
 
-          <AssetTable assets={assets} isLoading={loading} />
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          {Object.entries(companyAssets).length === 0 && !loading ? (
+            <div className="text-center py-8 text-gray-500">
+              No assets found
+            </div>
+          ) : (
+            Object.entries(companyAssets).map(([companyId, assets], idx, arr) => (
+              <div key={companyId}>
+                <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 flex items-center gap-4">
+                  <span className="font-semibold text-blue-700">
+                    Company ID:
+                  </span>
+                  <span className="text-blue-900">{companyId}</span>
+                  <span className="ml-4 text-sm text-gray-600">
+                    {assets.length} asset{assets.length !== 1 ? "s" : ""} found
+                  </span>
+                </div>
+                <AssetTable assets={assets} isLoading={loading} />
+                {idx < arr.length - 1 && (
+                  <div className="mx-6 my-2 border-t border-dashed border-blue-200" />
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

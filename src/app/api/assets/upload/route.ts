@@ -93,12 +93,19 @@ export async function POST(request: NextRequest) {
     for (const asset of assets) {
       if (!asset.address || typeof asset.latitude !== 'number' || typeof asset.longitude !== 'number') {
         return NextResponse.json(
-          { error: 'Invalid asset data structure' },
+          {
+            error: 'Invalid asset data structure',
+            help: `JSON example: [{"address":"123 Main St","latitude":51.5,"longitude":-0.1}]
+CSV example:
+address,latitude,longitude
+123 Main St,51.5,-0.1
+456 Elm St,40.7,-74`
+          },
           { status: 400 }
         );
       }
     }
-
+    console.log({companyId, assets});
     assetStorage.setAssets(companyId, assets);
 
     return NextResponse.json({
@@ -106,7 +113,7 @@ export async function POST(request: NextRequest) {
       count: assets.length
     });
 
-  } catch (error) {
+  } catch  {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
