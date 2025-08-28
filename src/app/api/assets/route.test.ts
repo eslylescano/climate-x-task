@@ -1,3 +1,16 @@
+(global as any).Request = class {
+  constructor(url: string, options?: any) {
+    this.url = url;
+    this.method = options?.method || "GET";
+    this.headers = options?.headers || {};
+    this.body = options?.body;
+  }
+  url: string;
+  method: string;
+  headers: any;
+  body: any;
+};
+
 import { GET } from './route';
 import { NextRequest } from 'next/server';
 import { assetStorage } from '@/utils/storage';
