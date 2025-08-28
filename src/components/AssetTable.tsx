@@ -12,6 +12,7 @@ interface AssetTableProps {
     index: number,
     updated: Partial<Asset>
   ) => Promise<void>;
+  onAssetDelete: (companyId: string, index: number) => Promise<void>;
 }
 
 export default function AssetTable({
@@ -19,6 +20,7 @@ export default function AssetTable({
   isLoading,
   companyId,
   onAssetEdit,
+  onAssetDelete,
 }: AssetTableProps) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editValues, setEditValues] = useState<Partial<Asset>>({});
@@ -151,7 +153,15 @@ export default function AssetTable({
                     Cancel
                   </button>
                 </>
-              ) : null}
+              ) : (
+                <button
+                  className="text-red-600 underline ml-2"
+                  title="Delete asset"
+                  onClick={() => onAssetDelete(companyId, idx)}
+                >
+                  Delete
+                </button>
+              )}
             </td>
           </tr>
         ))}

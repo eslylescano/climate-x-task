@@ -92,6 +92,48 @@ export default function Home() {
     }
   };
 
+  // Handle deleting an asset
+  const handleAssetDelete = async (companyId: string, index: number) => {
+    setEditError(null);
+    try {
+      const response = await fetch("/api/assets", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId, index }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setEditError(result.error || "Failed to delete asset");
+      } else {
+        setEditError(null);
+        fetchAssets(filterId.trim() || undefined);
+      }
+    } catch (err) {
+      setEditError("Failed to delete asset");
+    }
+  };
+
+  // Handle deleting a company
+  const handleCompanyDelete = async (companyId: string) => {
+    setEditError(null);
+    try {
+      const response = await fetch("/api/assets", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setEditError(result.error || "Failed to delete company");
+      } else {
+        setEditError(null);
+        fetchAssets(filterId.trim() || undefined);
+      }
+    } catch (err) {
+      setEditError("Failed to delete company");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -121,6 +163,8 @@ export default function Home() {
             hasMounted={hasMounted}
             onCompanyIdEdit={handleCompanyIdEdit}
             onAssetEdit={handleAssetEdit}
+            onCompanyDelete={handleCompanyDelete}
+            onAssetDelete={handleAssetDelete}
           />
         </div>
       </div>

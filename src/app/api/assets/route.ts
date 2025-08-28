@@ -71,3 +71,47 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+// DELETE: Remove an asset or an entire company
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // Delete an entire company
+    if (body.companyId && body.index === undefined) {
+      if (!assetStorage['store'].has(body.companyId)) {
+        return NextResponse.json(
+          { error: `Company ID "${body.companyId}" does not exist` },
+          { status: 404 }
+        );
+      }
+      assetStorage['store'].delete(body.companyId);
+      assetStorage['save']();
+      return NextResponse.json({ message: "Company deleted successfully" });
+    }
+
+    // Delete an individual asset
+    if (body.companyId && typeof body.index === "number") {
+      const assets = assetStorage.getAssets(body.companyId);
+      if (!assets[body.index]) {
+        return NextResponse.json(
+          { error: "Asset not found at given index" },
+          { status: 404 }
+        );
+      }
+      assets.splice(body.index, 1);
+      assetStorage.setAssets(body.companyId, assets);
+      return NextResponse.json({ message: "Asset deleted successfully" });
+    }
+
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Failed to delete" },
+      { status: 500 }
+    );
+  }
+}

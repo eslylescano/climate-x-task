@@ -15,6 +15,8 @@ interface CompanyAssetsListProps {
     index: number,
     updated: Partial<Asset>
   ) => Promise<void>;
+  onCompanyDelete: (companyId: string) => Promise<void>;
+  onAssetDelete: (companyId: string, index: number) => Promise<void>;
 }
 
 export default function CompanyAssetsList({
@@ -23,6 +25,8 @@ export default function CompanyAssetsList({
   hasMounted,
   onCompanyIdEdit,
   onAssetEdit,
+  onCompanyDelete,
+  onAssetDelete,
 }: CompanyAssetsListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
@@ -71,16 +75,25 @@ export default function CompanyAssetsList({
                 </button>
               </form>
             ) : (
-              <span
-                className="text-blue-900 cursor-pointer underline"
-                title="Click to edit"
-                onClick={() => {
-                  setEditingId(companyId);
-                  setEditValue(companyId);
-                }}
-              >
-                {companyId}
-              </span>
+              <>
+                <span
+                  className="text-blue-900 cursor-pointer underline"
+                  title="Click to edit"
+                  onClick={() => {
+                    setEditingId(companyId);
+                    setEditValue(companyId);
+                  }}
+                >
+                  {companyId}
+                </span>
+                <button
+                  className="text-red-600 underline ml-4"
+                  title="Delete company"
+                  onClick={() => onCompanyDelete(companyId)}
+                >
+                  Delete Company
+                </button>
+              </>
             )}
             <span className="ml-4 text-sm text-gray-600">
               {assets.length} asset{assets.length !== 1 ? "s" : ""} found
@@ -91,6 +104,7 @@ export default function CompanyAssetsList({
             isLoading={loading}
             companyId={companyId}
             onAssetEdit={onAssetEdit}
+            onAssetDelete={onAssetDelete}
           />
           {idx < arr.length - 1 && (
             <div className="mx-6 my-2 border-t border-dashed border-blue-200" />
