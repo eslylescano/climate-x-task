@@ -105,7 +105,6 @@ address,latitude,longitude
         );
       }
     }
-    console.log({companyId, assets});
     assetStorage.setAssets(companyId, assets);
 
     return NextResponse.json({
