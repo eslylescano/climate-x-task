@@ -10,6 +10,11 @@ interface CompanyAssetsListProps {
     oldCompanyId: string,
     newCompanyId: string
   ) => Promise<void>;
+  onAssetEdit: (
+    companyId: string,
+    index: number,
+    updated: Partial<Asset>
+  ) => Promise<void>;
 }
 
 export default function CompanyAssetsList({
@@ -17,6 +22,7 @@ export default function CompanyAssetsList({
   loading,
   hasMounted,
   onCompanyIdEdit,
+  onAssetEdit,
 }: CompanyAssetsListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
@@ -80,7 +86,12 @@ export default function CompanyAssetsList({
               {assets.length} asset{assets.length !== 1 ? "s" : ""} found
             </span>
           </div>
-          <AssetTable assets={assets} isLoading={loading} />
+          <AssetTable
+            assets={assets}
+            isLoading={loading}
+            companyId={companyId}
+            onAssetEdit={onAssetEdit}
+          />
           {idx < arr.length - 1 && (
             <div className="mx-6 my-2 border-t border-dashed border-blue-200" />
           )}

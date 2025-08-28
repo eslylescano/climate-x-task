@@ -67,6 +67,31 @@ export default function Home() {
     }
   };
 
+  // Handle editing asset fields
+  const handleAssetEdit = async (
+    companyId: string,
+    index: number,
+    updated: Partial<Asset>
+  ) => {
+    setEditError(null);
+    try {
+      const response = await fetch("/api/assets", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId, index, ...updated }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setEditError(result.error || "Failed to update asset");
+      } else {
+        setEditError(null);
+        fetchAssets(filterId.trim() || undefined);
+      }
+    } catch (err) {
+      setEditError("Failed to update asset");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -95,6 +120,7 @@ export default function Home() {
             loading={loading}
             hasMounted={hasMounted}
             onCompanyIdEdit={handleCompanyIdEdit}
+            onAssetEdit={handleAssetEdit}
           />
         </div>
       </div>

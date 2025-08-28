@@ -6,51 +6,67 @@ export async function GET(request: NextRequest) {
   const companyId = searchParams.get('companyId');
 
   if (companyId) {
-    // Return only the assets for the requested companyId
     const assets = assetStorage.getAssets(companyId);
     return NextResponse.json({ [companyId]: assets });
   } else {
-    // Return all companies and their assets
     const all = Object.fromEntries(assetStorage['store']);
     return NextResponse.json(all);
   }
 }
 
-// Edit companyId: expects JSON { oldCompanyId: string, newCompanyId: string }
+// PUT: Edit companyId or update an asset's fields
 export async function PUT(request: NextRequest) {
   try {
-    const { oldCompanyId, newCompanyId } = await request.json();
+    const body = await request.json();
 
-    if (!oldCompanyId || !newCompanyId) {
-      return NextResponse.json(
-        { error: "Both oldCompanyId and newCompanyId are required" },
-        { status: 400 }
-      );
+    // Change companyId
+    if (body.oldCompanyId && body.newCompanyId) {
+      const all = Object.fromEntries(assetStorage['store']);
+      if (!all[body.oldCompanyId]) {
+        return NextResponse.json(
+          { error: `Company ID "${body.oldCompanyId}" does not exist` },
+          { status: 404 }
+        );
+      }
+      if (all[body.newCompanyId]) {
+        return NextResponse.json(
+          { error: `Company ID "${body.newCompanyId}" already exists` },
+          { status: 409 }
+        );
+      }
+      assetStorage['store'].set(body.newCompanyId, assetStorage['store'].get(body.oldCompanyId)!);
+      assetStorage['store'].delete(body.oldCompanyId);
+      assetStorage['save']();
+      return NextResponse.json({ message: "Company ID updated successfully" });
     }
 
-    const all = Object.fromEntries(assetStorage['store']);
-    if (!all[oldCompanyId]) {
-      return NextResponse.json(
-        { error: `Company ID "${oldCompanyId}" does not exist` },
-        { status: 404 }
-      );
-    }
-    if (all[newCompanyId]) {
-      return NextResponse.json(
-        { error: `Company ID "${newCompanyId}" already exists` },
-        { status: 409 }
-      );
+    // Change asset fields (address, latitude, longitude)
+    if (
+      body.companyId &&
+      typeof body.index === "number" &&
+      (body.address !== undefined || body.latitude !== undefined || body.longitude !== undefined)
+    ) {
+      const assets = assetStorage.getAssets(body.companyId);
+      if (!assets[body.index]) {
+        return NextResponse.json(
+          { error: "Asset not found at given index" },
+          { status: 404 }
+        );
+      }
+      if (body.address !== undefined) assets[body.index].address = body.address;
+      if (body.latitude !== undefined) assets[body.index].latitude = body.latitude;
+      if (body.longitude !== undefined) assets[body.index].longitude = body.longitude;
+      assetStorage.setAssets(body.companyId, assets);
+      return NextResponse.json({ message: "Asset updated successfully" });
     }
 
-    // Move assets to new key and remove old key
-    assetStorage['store'].set(newCompanyId, assetStorage['store'].get(oldCompanyId)!);
-    assetStorage['store'].delete(oldCompanyId);
-    assetStorage['save']();
-
-    return NextResponse.json({ message: "Company ID updated successfully" });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to update company ID" },
+      { error: "Failed to update" },
       { status: 500 }
     );
   }

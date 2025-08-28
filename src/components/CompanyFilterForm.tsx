@@ -20,7 +20,7 @@ export default function CompanyFilterForm({
         type="text"
         placeholder="Filter by Company ID"
         value={filterId}
-        onChange={e => setFilterId(e.target.value)}
+        onChange={(e) => setFilterId(e.target.value)}
         className="border px-2 py-1 rounded"
       />
       <button
