@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Asset } from "@/types/asset";
-import AssetTable from "@/components/AssetTable";
 import AssetUploadForm from "@/components/AssetUploadForm";
+import CompanyAssetsList from "@/components/CompanyAssetsList";
+import CompanyFilterForm from "@/components/CompanyFilterForm";
 
 export default function Home() {
   const [companyAssets, setCompanyAssets] = useState<Record<string, Asset[]>>(
@@ -11,11 +12,15 @@ export default function Home() {
   );
   const [loading, setLoading] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
+  const [filterId, setFilterId] = useState("");
 
-  const fetchAssets = async () => {
+  const fetchAssets = async (companyId?: string) => {
     try {
       setLoading(true);
-      const response = await fetch("/api/assets");
+      const url = companyId
+        ? `/api/assets?companyId=${encodeURIComponent(companyId)}`
+        : "/api/assets";
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setCompanyAssets(data);
@@ -40,36 +45,22 @@ export default function Home() {
           <p className="text-gray-600">View asset data</p>
         </header>
 
-        <AssetUploadForm onUploadSuccess={fetchAssets} />
+        <AssetUploadForm
+          onUploadSuccess={() => fetchAssets(filterId.trim() || undefined)}
+        />
+
+        <CompanyFilterForm
+          filterId={filterId}
+          setFilterId={setFilterId}
+          onFilter={fetchAssets}
+        />
 
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          {!hasMounted ||
-          (Object.entries(companyAssets).length === 0 && !loading) ? (
-            <div className="text-center py-8 text-gray-500">
-              No assets found
-            </div>
-          ) : (
-            Object.entries(companyAssets).map(
-              ([companyId, assets], idx, arr) => (
-                <div key={companyId}>
-                  <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 flex items-center gap-4">
-                    <span className="font-semibold text-blue-700">
-                      Company ID:
-                    </span>
-                    <span className="text-blue-900">{companyId}</span>
-                    <span className="ml-4 text-sm text-gray-600">
-                      {assets.length} asset{assets.length !== 1 ? "s" : ""}{" "}
-                      found
-                    </span>
-                  </div>
-                  <AssetTable assets={assets} isLoading={loading} />
-                  {idx < arr.length - 1 && (
-                    <div className="mx-6 my-2 border-t border-dashed border-blue-200" />
-                  )}
-                </div>
-              )
-            )
-          )}
+          <CompanyAssetsList
+            companyAssets={companyAssets}
+            loading={loading}
+            hasMounted={hasMounted}
+          />
         </div>
       </div>
     </div>
